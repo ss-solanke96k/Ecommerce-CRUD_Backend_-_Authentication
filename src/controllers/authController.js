@@ -1,5 +1,6 @@
 import { UserModel } from "../models/userModel.js";
 
+//***Register Controller***//
 export const registerController = async (req, res) => {
     try {
         let { name, password, email, mobile } = req.body;
@@ -29,6 +30,8 @@ export const registerController = async (req, res) => {
     }
 };
 
+
+//***Login Controller***//
 export const loginController = async (req, res) => {
     try {
         let { email, password } = req.body;

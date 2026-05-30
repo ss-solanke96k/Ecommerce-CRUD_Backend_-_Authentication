@@ -12,7 +12,7 @@ export const createProductController = async (req,res) => {
 
        const { name,description,price,category } =  req.body;
 
-        // ----- Get the files from the request -----
+        // *** Get the files from the request ***
         const files = req.files;
 
        //***Validation for name***//
@@ -22,18 +22,18 @@ export const createProductController = async (req,res) => {
         })
     }
 
-   //----- upload files to imagekit -----
+   //*** upload files to imagekit ***
     const Transfer = await Promise.all(
       files.map((elem) => Upload_files(elem.buffer, elem.originalname))
     );
 
-    // ----- fields and url of the images ----- 
+    // *** fields and url of the images *** 
     const imageRecords = Transfer.map((elem) => ({
       url: elem.url,
       fileId: elem.fileId
     }));
 
-    // ----- Create a new document in the database -----
+    // *** Create a new document in the database ***
  const newProduct = await productModel.create({
   description,
   name,
@@ -80,22 +80,20 @@ export const getAllProductController = async (req,res) => {
 
 
     try {
-        // ----- Get the data from the request query -----
+        // *** Get the data from the request query ***
         const {category} = req.query
-      // ----- Create a filter object -----
+      // *** Create a scan object ***
       let scan = {};
 
-    // ------ if category is present then add it to the filter object ------
+    // ***check category is present or not if yes then add it to the scan object ***-
     if (category) {
       scan.category = category;
     }
 
-    // ----- fetch specific documents from the database -----
-    // ----  & if filter is empty then fetch all the documents -----
-    // ----- Get all the documents from the database -----
+    
     const View = await productModel.find(scan);
 
-    // ----- Return the response -----
+    // *** Return the response ***
     return res.status(200).json({
       message: "File Fetched Successfully",
       View,
@@ -112,13 +110,12 @@ export const getAllProductController = async (req,res) => {
 //Get a single product by it's if//
 export const getProductbyId = async(req,res)=>{
      try {   
-        // ----- Get the id from the request params -----
+        // ***getting id***
         const {id} = req.params
 
-        // ----- fetch specific documents from the database by id -----
         const View = await productModel.findOne({_id:id})
         
-        // ----- Return the response -----
+        //Return the response
         return res.status(200).json({
       message: "File Fetched Successfully",
       View,
@@ -135,30 +132,30 @@ export const getProductbyId = async(req,res)=>{
 //Update a single product//
 export const updateProductController = async (req, res) => {
   try {
-    // ----- Get the id from the request params -----
+    //getting id
     const { id } = req.params;
 
-    // ----- Get the data from the request body -----
+    //getting data
     const { description, name,price,category} = req.body;
 
-    // ----- Get the files from the request -----
+
     const files = req.files;
-        // ----- Check if required the fields are present -----
+       //Validation of the fields below
         if (!description||!name||!price||!category) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
 
-    // first get the existing document
+    
     const existingDoc = await productModel.findOne({
         _id: id,
-        user: req.user.email // Lowercase u
+        user: req.user.email 
     });
     let imageRecords = existingDoc.image; 
 
-    // 
+    
     if (files && files.length > 0) {
-      // 1. Delete the existing images
+     
       await Promise.all(existingDoc.image.map((img) => Delete_file(img.fileId)));
 
       // 2. Update the new images
@@ -173,7 +170,7 @@ export const updateProductController = async (req, res) => {
       }));
     }
 
-    // ----- Update the document in the database -----
+    // *** Update the document in the database ***
     const Update = await productModel.findByIdAndUpdate(
       id,
       {
@@ -185,7 +182,7 @@ export const updateProductController = async (req, res) => {
       },
       { new: true }
     );
-    // ----- Return the response -----
+    //Return the response//
     return res.status(200).json({
       message: "File Updated Successfully",
       Update,
@@ -200,26 +197,26 @@ export const deleteProductController = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // 1. Get the document from the database
+    // Get the product from the database
    const existingDoc = await productModel.findOne({
     _id: id,
-    user: req.user.email // Lowercase u
+    user: req.user.email
 });
     if (!existingDoc) {
       return res.status(404).json({ message: "Document not found" });
     }
 
-    // 2. Delete the images
+    //Delete the images
     if (existingDoc.image && existingDoc.image.length > 0) {
       await Promise.all(
         existingDoc.image.map((img) => Delete_file(img.fileId))
       );
     }
 
-    // 3. and finally delete the document from the database
+    //now deleting the product from database
     const Delete = await productModel.findByIdAndDelete(id);
     
-    // ----- Return the response -----
+    // *** Return the response ***
     return res.status(200).json({
       message: "File and Data Deleted Successfully",
       Delete,

@@ -18,8 +18,7 @@ const authMiddleware = async (req, res, next) => {
                 message: "Unauthorized user",
             });
         }
-
-        // Now UserModel is correctly capitalized and will work!
+        
         const user = await UserModel.findById(decode.id);
         req.user = user;
         next();
