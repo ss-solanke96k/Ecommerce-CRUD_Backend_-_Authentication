@@ -1,49 +1,30 @@
 import productModel from '../models/product.js';
-// import ImageModel from '../models/Image';
 
+//Create product controller name,description,price,category,images are required//
 export const createProductController = async (req,res) => {
 
     try {
-        
-       const { name,description,price,category,images } =  req.body;
+        //get the data from req body
+       const { name,description,price,category } =  req.body;
 
-    if(!name){
+       //***Validation for name***//
+    if(!name || !price){
         return res.status(400).json({
-            message:"Product name is required",
+            message:"Product name and Price is required",
         })
     }
 
-    if(!description){
-        return res.status(400).json({
-            message:"Description is required",
-        })
-    }    
-
-    if(!price){
-        return res.status(400).json({
-            message:"Price is required",
-        })
-    }
-
-    if(!category){
-        return res.status(400).json({
-            message:"Category is required",
-        })
-    }    
-
-    if(!images){
-        return res.status(400).json({
-            message:"Image is required",
-        })
-    }
-
+    //Create a new Product in the database
     const newProduct = await productModel.create({name,description,price,category,images});
 
-    return res.status(201).json(newProduct);
+    //Return the response
+    return res.status(201).json({
+        message: "Product created successfully",
+        newProduct,
+    });
     }
 
-    
-    
+
     catch (error) {
         return res.status(201).json({
             message:"Internal server error",
@@ -52,11 +33,15 @@ export const createProductController = async (req,res) => {
     
 }
 
+
+//Get all the product Controller//
 export const getAllProductController = async (req,res) => {
 
+    //Find the products
     try {
         const product = await productModel.find();
 
+        //Return the response
     return res.status(200).json({
         message:"Products Fetched Successfully",
         product,
@@ -71,13 +56,13 @@ export const getAllProductController = async (req,res) => {
 
 export const getProductbyId = async(req,res)=>{
     try {   
-        // ----- Get the id from the request params -----
+        //Get id from request params//
         const {id} = req.params
 
-        // ----- fetch specific documents from the database by id -----
+        //fetch specific documents from the database by id
         const View = await ImageModel.findOne({_id:id})
         
-        // ----- Return the response -----
+        //Return the response
         return res.status(200).json({
         message: "File Fetched Successfully",
         View,
@@ -91,10 +76,13 @@ export const getProductbyId = async(req,res)=>{
     }
 }
 
+//Update a single product//
 export const updateProductController = async (req,res) => {
     try {
         const { id } = req.params;
         const { description } = req.body;
+
+        //***Validation***/
     if(!description) {
         return res.status(400).json({error: "Description is required"});
     }
@@ -103,8 +91,11 @@ export const updateProductController = async (req,res) => {
         return res.status(400).json({error: "Description must be at least 10 character long"});
     }
 
-    const product = await productModel.findById(id)
+    //Find aproduct by id//
 
+    const product = await productModel.findById(id)
+    
+    //Validation//
     if(!product){
         return res.status(404).json({error:"Product not found"});
     }
@@ -112,6 +103,7 @@ export const updateProductController = async (req,res) => {
     product.description = description;
     await product.save();
 
+    //Return the response//
     return res.status(200).json({
         message:"Product updated successfully",
         product
@@ -123,22 +115,28 @@ export const updateProductController = async (req,res) => {
     }
 }
 
+
+//delete product controller Delete by id//
 export const deleteProductController = async (req,res) => {
+
     const { id } = req.params;
 
+    //find the product by given id//
     const product = await productModel.findById(id);
-
+    
+    //check product exist or not//
     if (!product) {
         return res.status(404).json({
             error: "Product not found"
         });
     }
 
+    //Find the product by if and delete//
     await productModel.findByIdAndDelete(id);
 
+    //return the response
     return res.status(200).json({
         message: "Product deleted successfully"
     });
     
 };
-
